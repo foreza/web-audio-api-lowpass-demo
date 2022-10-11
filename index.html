@@ -24,8 +24,9 @@
     </div>
 
     <div>
-      <label for="low-pass-val">Low Pass Filter value:</label>
-      <input id="low-pass" name="low-pass-val" max="24000" min="0" value="2000" type="number" />
+      <p>Filter State: <span id="filter-state">Not active</span></p>
+      <label for="low-pass-val">Low Pass Filter value: <span id="low-pass-display-val">2000</span></label>
+      <input id="low-pass" name="low-pass-val" max="24000" min="0" value="2000" step="100" type="range"/>
     </div>
 
     <div>
@@ -38,11 +39,15 @@
 
     <script>
 
-      let source;
+      let gAudio; // A reference to our audio dom node
+      let source; 
       let context;
       let filter;
+      
+      let isFilterActive = false; // Track the state of the filter for some basic logic
 
       function applyFilterToAudio() {
+        
         if (typeof context == "undefined") {
           context = new AudioContext();
         }
@@ -69,17 +74,28 @@
 
         // Connect that to the output
         filter.connect(context.destination);
+
+        isFilterActive = true;
+        let filterStateText = document.getElementById("filter-state");
+        filterStateText.innerHTML = "Active";
       }
 
 
       function disconnectFilterFromAudio() {
-        source.disconnect();
-        filter.disconnect();
-        source.connect(context.destination);
+        
+        try {
+          source.disconnect();
+          filter.disconnect();
+          source.connect(context.destination);
+        } catch (e) {
+          console.error(e);
+        } 
+ 
+        isFilterActive = false;
+        let filterStateText = document.getElementById("filter-state");
+        filterStateText.innerHTML = "Inactive";
       }
 
-
-      let gAudio;
 
       function createAudio() {
         try {
@@ -100,7 +116,29 @@
       function pauseAudio() {
         gAudio.pause();
       }
+      
 
+
+      function setupListeners(){
+
+
+        // Set up slider stuff
+        let slider = document.getElementById("low-pass");
+        let sliderVal = document.getElementById("low-pass-display-val");
+        slider.addEventListener('input',  () => {
+          sliderVal.innerHTML = slider.value;
+          if (isFilterActive) {
+            // Automatically update it
+            try {
+              filter.frequency.value = getLowPassValueFromInput()
+            } catch (e){
+              console.error(e);
+            }
+          }
+        }, false);
+      }
+      
+      
       function getLowPassValueFromInput() {
         let val = document.getElementById("low-pass").value;
 
@@ -115,7 +153,9 @@
         return val;
       }
 
+
       createAudio();
+      setupListeners();
 
     </script>
 
