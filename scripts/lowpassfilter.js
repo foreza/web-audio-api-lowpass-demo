@@ -48,7 +48,10 @@ function initializeLPFilter() {
 
 function applyFilterToAudio() {
 
+  source.disconnect(); // Important to first disconnect it
   source.connect(filter);
+  reconnectAnalyzer(filter);
+  // TODO: viz
   filter.connect(context.destination);
 
   isFilterActive = true;
@@ -64,6 +67,8 @@ function disconnectFilterFromAudio() {
   try {
     // Connect source back to destination
     source.connect(context.destination);
+    reconnectAnalyzer(source);
+    // TODO: viz
     // ensure we're
     // source.connect(analyzer);
   } catch (e) {
