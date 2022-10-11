@@ -1,0 +1,128 @@
+<html>
+
+<head>
+
+  <!--Import Google Icon Font-->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <!--Let browser know website is optimized for mobile-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Compiled and minified CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+</head>
+
+<body>
+  <div class="container">
+    <h1>Let's make low pass filters fun!</h1>
+    <p>(Disclaimer: This is NOT my music, credits go to the lovely <a href="https://www.yvonneyuanmusic.com/">Yvonne Yuan</a></p>
+
+    <div>
+      <button class="btn green waves-effect waves-light" onclick="playAudio()">Play</button>
+      <button class="btn red waves-effect waves-light" onclick="pauseAudio()">Pause</button>
+    </div>
+
+    <div>
+      <label for="low-pass-val">Low Pass Filter value:</label>
+      <input id="low-pass" name="low-pass-val" max="24000" min="0" value="2000" type="number" />
+    </div>
+
+    <div>
+      <button class="btn blue waves-effect waves-light" onclick="applyFilterToAudio()">Apply Filter</button>
+      <button class="btn red waves-effect waves-light" onclick="disconnectFilterFromAudio()">Remove Filter</button>
+    </div>
+
+    <p>Click play, then apply the filter to hear the difference.</p>
+    <p>Values to try: 20000 (virtually no difference), 2000 (big difference), 200 (whoa)</p>
+
+    <script>
+
+      let source;
+      let context;
+      let filter;
+
+      function applyFilterToAudio() {
+        if (typeof context == "undefined") {
+          context = new AudioContext();
+        }
+
+        if (typeof source == "undefined") {
+          source = context.createMediaElementSource(document.getElementsByTagName('audio')[0]);
+        } else {
+
+          // Disconnect it from the prior source
+          try {
+            source.disconnect();
+          } catch (e) {
+            console.log(e);
+          }
+        }
+
+        //Now we want to create a filter
+        filter = context.createBiquadFilter();
+        source.connect(filter); //and of course connect it
+
+        // Configure filter
+        filter.type = "lowpass";
+        filter.frequency.value = getLowPassValueFromInput(); // default, configurable
+
+        // Connect that to the output
+        filter.connect(context.destination);
+      }
+
+
+      function disconnectFilterFromAudio() {
+        source.disconnect();
+        filter.disconnect();
+        source.connect(context.destination);
+      }
+
+
+      let gAudio;
+
+      function createAudio() {
+        try {
+          gAudio.pause();
+        } catch (e) {
+          console.log(e);
+        }
+
+        gAudio = document.createElement("audio");
+        gAudio.src = "./citypop-yvonneyuan.m4a";
+        document.head.appendChild(gAudio);
+      }
+
+      function playAudio() {
+        gAudio.play();
+      }
+
+      function pauseAudio() {
+        gAudio.pause();
+      }
+
+      function getLowPassValueFromInput() {
+        let val = document.getElementById("low-pass").value;
+
+        if (typeof (val) == 'undefined' || val < 0) {
+          return 0;
+        }
+
+        if (val > 24000) {
+          return 24000;
+        }
+
+        return val;
+      }
+
+      createAudio();
+
+    </script>
+
+  <!-- Compiled and minified JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+</body>
+</div>
+
+</html>
