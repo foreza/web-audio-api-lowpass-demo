@@ -48,12 +48,7 @@ function initializeLPFilter() {
 
 function applyFilterToAudio() {
 
-
   source.connect(filter);
-
-  // Configure filter
-
-
   filter.connect(context.destination);
 
   isFilterActive = true;
